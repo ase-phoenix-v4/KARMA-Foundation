@@ -66,7 +66,20 @@ class API(BaseHTTPRequestHandler):
             else: self._reply({"error":"direction?"}, 400)
         elif p == "/api/last_block":
             self._reply(chain[-1])
-        else: self._reply({"status":"KARMA online"})
+        elif p == "/api/price":
+            price_usdc = round(pool_usdc["token"] / pool_usdc["karma"], 6)
+            price_pol = round(pool_pol["token"] / pool_pol["karma"], 6)
+            market_cap = round(price_usdc * 1000000000, 2)
+            self._reply({
+                "token": "KARMA",
+                "price_usdc": price_usdc,
+                "price_pol": price_pol,
+                "market_cap_usd": market_cap,
+                "total_supply": 1000000000,
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+            })
+        else:
+            self._reply({"status":"KARMA online"})
 
 def auto_miner():
     while True:
