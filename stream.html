@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KARMA Live Block Stream</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a0a; color: #00ff88; font-family: 'Courier New', monospace; padding: 20px; }
+        h1 { text-align: center; color: #c9a227; margin-bottom: 20px; }
+        #counter { text-align: center; font-size: 1.5em; margin: 10px 0; }
+        #status { text-align: center; margin: 10px 0; }
+        #blocks { max-height: 70vh; overflow-y: auto; }
+        .block { border: 1px solid #00ff8833; border-radius: 8px; padding: 12px; margin: 8px 0; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .block .index { color: #c9a227; font-size: 1.2em; font-weight: bold; }
+        .block .hash { color: #666; font-size: 0.7em; }
+        .block .time { color: #aaa; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+    <h1>🔴 KARMA LIVE BLOCK STREAM</h1>
+    <div id="counter">Blocks: <span id="count">0</span></div>
+    <div id="status">🟢 Streaming...</div>
+    <div id="blocks"></div>
+
+    <script>
+        const API = "https://karma-foundation.onrender.com/api";
+        let lastIndex = 0;
+
+        async function fetchLatestBlock() {
+            try {
+                const r = await fetch(`${API}/last_block`);
+                const block = await r.json();
+                if (block.index > lastIndex) {
+                    lastIndex = block.index;
+                    const div = document.createElement("div");
+                    div.className = "block";
+                    div.innerHTML = `
+                        <div class="index">#${block.index}</div>
+                        <div class="time">${block.timestamp}</div>
+                        <div class="hash">${block.hash.substring(0, 40)}...</div>
+                    `;
+                    document.getElementById("blocks").insertBefore(div, document.getElementById("blocks").firstChild);
+                    document.getElementById("count").textContent = block.index;
+                }
+            } catch(e) {}
+        }
+
+        fetchLatestBlock();
+        setInterval(fetchLatestBlock, 2000);
+    </script>
+</body>
+</html>
