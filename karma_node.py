@@ -27,8 +27,10 @@ def new_block(data):
         chain.append(b)
         return b
 
-PEERS = ["https://karma-node2.onrender.com"]
-
+PEERS = [
+    "https://karma-node2.onrender.com",
+    "https://karma-node-3.onrender.com"
+]
 
 def sync_from_peers():
     for peer in PEERS:
