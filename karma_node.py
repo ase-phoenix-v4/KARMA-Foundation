@@ -1,1 +1,86 @@
-https://github.com/ase-phoenix-v4/KARMA-Foundation/new/main?filename=karma_node.py&value=from%20http.server%20import%20HTTPServer%2C%20BaseHTTPRequestHandler%0Afrom%20urllib.parse%20import%20urlparse%2C%20parse_qs%0Aimport%20json%2C%20time%2C%20hashlib%2C%20os%2C%20threading%0A%0A%23%20---%201.%20GENESIS%20---%0AGENESIS%20%3D%20%7B%0A%20%20%20%20%22index%22%3A%200%2C%20%22timestamp%22%3A%20%222026-05-03%2010%3A00%3A00%22%2C%0A%20%20%20%20%22data%22%3A%20%7B%22action%22%3A%20%22genesis%22%2C%20%22supply%22%3A%201000000000%2C%20%22architect%22%3A%20%7B%22address%22%3A%20%22KARMA_ARCHITECT%22%2C%20%22share%22%3A%20230000000%7D%7D%2C%0A%20%20%20%20%22previous_hash%22%3A%20%220%22*64%2C%20%22hash%22%3A%20%22%22%0A%7D%0AGENESIS%5B%22hash%22%5D%20%3D%20hashlib.sha256(json.dumps(GENESIS%2C%20sort_keys%3DTrue).encode()).hexdigest()%0Achain%20%3D%20%5BGENESIS%5D%0Achain_lock%20%3D%20threading.Lock()%0Abalances%20%3D%20%7B%22KARMA_ARCHITECT%22%3A%20230000000%7D%0A%0A%23%20---%202.%20AMM%20POOL%20---%0Apool%20%3D%20%7B%0A%20%20%20%20%22karma%22%3A%201000000.0%2C%0A%20%20%20%20%22usdc%22%3A%201000.0%2C%0A%20%20%20%20%22k%22%3A%201000000.0%20*%201000.0%2C%0A%20%20%20%20%22fee_percent%22%3A%200.3%0A%7D%0A%0Adef%20swap_karma_for_usdc(amount_in)%3A%0A%20%20%20%20fee%20%3D%20amount_in%20*%20pool%5B%22fee_percent%22%5D%20%2F%20100%0A%20%20%20%20net%20%3D%20amount_in%20-%20fee%0A%20%20%20%20out%20%3D%20pool%5B%22usdc%22%5D%20-%20(pool%5B%22k%22%5D%20%2F%20(pool%5B%22karma%22%5D%20%2B%20net))%0A%20%20%20%20pool%5B%22karma%22%5D%20%2B%3D%20amount_in%0A%20%20%20%20pool%5B%22usdc%22%5D%20-%3D%20out%0A%20%20%20%20pool%5B%22k%22%5D%20%3D%20pool%5B%22karma%22%5D%20*%20pool%5B%22usdc%22%5D%0A%20%20%20%20return%20round(out%2C%206)%2C%20round(pool%5B%22usdc%22%5D%20%2F%20pool%5B%22karma%22%5D%2C%206)%0A%0Adef%20swap_usdc_for_karma(amount_in)%3A%0A%20%20%20%20fee%20%3D%20amount_in%20*%20pool%5B%22fee_percent%22%5D%20%2F%20100%0A%20%20%20%20net%20%3D%20amount_in%20-%20fee%0A%20%20%20%20out%20%3D%20pool%5B%22karma%22%5D%20-%20(pool%5B%22k%22%5D%20%2F%20(pool%5B%22usdc%22%5D%20%2B%20net))%0A%20%20%20%20pool%5B%22usdc%22%5D%20%2B%3D%20amount_in%0A%20%20%20%20pool%5B%22karma%22%5D%20-%3D%20out%0A%20%20%20%20pool%5B%22k%22%5D%20%3D%20pool%5B%22karma%22%5D%20*%20pool%5B%22usdc%22%5D%0A%20%20%20%20return%20round(out%2C%206)%2C%20round(pool%5B%22usdc%22%5D%20%2F%20pool%5B%22karma%22%5D%2C%206)%0A%0Adef%20new_block(data)%3A%0A%20%20%20%20with%20chain_lock%3A%0A%20%20%20%20%20%20%20%20prev%20%3D%20chain%5B-1%5D%0A%20%20%20%20%20%20%20%20b%20%3D%20%7B%22index%22%3A%20prev%5B%22index%22%5D%2B1%2C%20%22timestamp%22%3A%20time.strftime(%22%25Y-%25m-%25d%20%25H%3A%25M%3A%25S%22)%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%22data%22%3A%20data%2C%20%22previous_hash%22%3A%20prev%5B%22hash%22%5D%2C%20%22hash%22%3A%20%22%22%7D%0A%20%20%20%20%20%20%20%20b%5B%22hash%22%5D%20%3D%20hashlib.sha256(json.dumps(b%2C%20sort_keys%3DTrue).encode()).hexdigest()%0A%20%20%20%20%20%20%20%20chain.append(b)%0A%20%20%20%20%20%20%20%20return%20b%0A%0Aclass%20API(BaseHTTPRequestHandler)%3A%0A%20%20%20%20def%20_reply(self%2C%20data%2C%20code%3D200%2C%20ctype%3D%22application%2Fjson%22)%3A%0A%20%20%20%20%20%20%20%20body%20%3D%20json.dumps(data).encode()%20if%20isinstance(data%2C%20dict)%20else%20data.encode()%0A%20%20%20%20%20%20%20%20self.send_response(code)%3B%20self.send_header(%22Content-type%22%2C%20ctype)%3B%20self.end_headers()%3B%20self.wfile.write(body)%0A%0A%20%20%20%20def%20do_GET(self)%3A%0A%20%20%20%20%20%20%20%20p%20%3D%20urlparse(self.path).path%0A%20%20%20%20%20%20%20%20q%20%3D%20parse_qs(urlparse(self.path).query)%0A%20%20%20%20%20%20%20%20if%20p%20%3D%3D%20%22%2Fapi%2Fpulse%22%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20self._reply(%7B%22network%22%3A%22KARMA%20Iron%20Testnet%22%2C%22blocks%22%3Alen(chain)%2C%22status%22%3A%22online%22%7D)%0A%20%20%20%20%20%20%20%20elif%20p%20%3D%3D%20%22%2Fapi%2Fpool%22%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20self._reply(%7B%22pool%22%3A%22KARMA%2FUSDC%22%2C%22karma%22%3Apool%5B%22karma%22%5D%2C%22usdc%22%3Apool%5B%22usdc%22%5D%2C%22price%22%3Around(pool%5B%22usdc%22%5D%2Fpool%5B%22karma%22%5D%2C6)%7D)%0A%20%20%20%20%20%20%20%20elif%20p%20%3D%3D%20%22%2Fapi%2Fswap%22%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20d%20%3D%20q.get(%22direction%22%2C%5B%22%22%5D)%5B0%5D%0A%20%20%20%20%20%20%20%20%20%20%20%20a%20%3D%20float(q.get(%22amount%22%2C%5B%220%22%5D)%5B0%5D)%0A%20%20%20%20%20%20%20%20%20%20%20%20if%20d%3D%3D%22karma_to_usdc%22%20and%20a%3E0%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20out%2C%20price%20%3D%20swap_karma_for_usdc(a)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20self._reply(%7B%22swap%22%3Af%22%7Ba%7D%20KARMA%20%E2%86%92%20%7Bout%7D%20USDC%22%2C%22new_price%22%3Aprice%7D)%0A%20%20%20%20%20%20%20%20%20%20%20%20elif%20d%3D%3D%22usdc_to_karma%22%20and%20a%3E0%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20out%2C%20price%20%3D%20swap_usdc_for_karma(a)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20self._reply(%7B%22swap%22%3Af%22%7Ba%7D%20USDC%20%E2%86%92%20%7Bout%7D%20KARMA%22%2C%22new_price%22%3Aprice%7D)%0A%20%20%20%20%20%20%20%20%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20self._reply(%7B%22error%22%3A%22use%20direction%3Dkarma_to_usdc%20or%20usdc_to_karma%20and%20amount%3E0%22%7D%2C%20400)%0A%20%20%20%20%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20self._reply(%7B%22status%22%3A%22KARMA%20online%22%7D)%0A%0Adef%20auto_miner()%3A%0A%20%20%20%20while%20True%3A%0A%20%20%20%20%20%20%20%20time.sleep(10)%0A%20%20%20%20%20%20%20%20new_block(%7B%22action%22%3A%22auto-mine%22%7D)%0A%0Aif%20__name__%20%3D%3D%20%22__main__%22%3A%0A%20%20%20%20port%20%3D%20int(os.environ.get(%22PORT%22%2C%2010000))%0A%20%20%20%20threading.Thread(target%3Dauto_miner%2C%20daemon%3DTrue).start()%0A%20%20%20%20print(f%22KARMA%20NODE%20%2B%20AMM%20POOL%20%E2%80%93%20Port%20%7Bport%7D%22)%0A%20%20%20%20HTTPServer((%220.0.0.0%22%2C%20port)%2C%20API).serve_forever()
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
+import json, time, hashlib, os, threading
+
+# --- 1. GENESIS ---
+GENESIS = {
+    "index": 0, "timestamp": "2026-05-03 10:00:00",
+    "data": {"action": "genesis", "supply": 1000000000, "architect": {"address": "KARMA_ARCHITECT", "share": 230000000}},
+    "previous_hash": "0"*64, "hash": ""
+}
+GENESIS["hash"] = hashlib.sha256(json.dumps(GENESIS, sort_keys=True).encode()).hexdigest()
+chain = [GENESIS]
+chain_lock = threading.Lock()
+balances = {"KARMA_ARCHITECT": 230000000}
+
+# --- 2. AMM POOL ---
+pool = {
+    "karma": 1000000.0,
+    "usdc": 1000.0,
+    "k": 1000000.0 * 1000.0,
+    "fee_percent": 0.3
+}
+
+def swap_karma_for_usdc(amount_in):
+    fee = amount_in * pool["fee_percent"] / 100
+    net = amount_in - fee
+    out = pool["usdc"] - (pool["k"] / (pool["karma"] + net))
+    pool["karma"] += amount_in
+    pool["usdc"] -= out
+    pool["k"] = pool["karma"] * pool["usdc"]
+    return round(out, 6), round(pool["usdc"] / pool["karma"], 6)
+
+def swap_usdc_for_karma(amount_in):
+    fee = amount_in * pool["fee_percent"] / 100
+    net = amount_in - fee
+    out = pool["karma"] - (pool["k"] / (pool["usdc"] + net))
+    pool["usdc"] += amount_in
+    pool["karma"] -= out
+    pool["k"] = pool["karma"] * pool["usdc"]
+    return round(out, 6), round(pool["usdc"] / pool["karma"], 6)
+
+def new_block(data):
+    with chain_lock:
+        prev = chain[-1]
+        b = {"index": prev["index"]+1, "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+             "data": data, "previous_hash": prev["hash"], "hash": ""}
+        b["hash"] = hashlib.sha256(json.dumps(b, sort_keys=True).encode()).hexdigest()
+        chain.append(b)
+        return b
+
+class API(BaseHTTPRequestHandler):
+    def _reply(self, data, code=200, ctype="application/json"):
+        body = json.dumps(data).encode() if isinstance(data, dict) else data.encode()
+        self.send_response(code); self.send_header("Content-type", ctype); self.end_headers(); self.wfile.write(body)
+
+    def do_GET(self):
+        p = urlparse(self.path).path
+        q = parse_qs(urlparse(self.path).query)
+        if p == "/api/pulse":
+            self._reply({"network":"KARMA Iron Testnet","blocks":len(chain),"status":"online"})
+        elif p == "/api/pool":
+            self._reply({"pool":"KARMA/USDC","karma":pool["karma"],"usdc":pool["usdc"],"price":round(pool["usdc"]/pool["karma"],6)})
+        elif p == "/api/swap":
+            d = q.get("direction",[""])[0]
+            a = float(q.get("amount",["0"])[0])
+            if d == "karma_to_usdc" and a > 0:
+                out, price = swap_karma_for_usdc(a)
+                self._reply({"swap":f"{a} KARMA → {out} USDC","new_price":price})
+            elif d == "usdc_to_karma" and a > 0:
+                out, price = swap_usdc_for_karma(a)
+                self._reply({"swap":f"{a} USDC → {out} KARMA","new_price":price})
+            else:
+                self._reply({"error":"use direction=karma_to_usdc or usdc_to_karma and amount>0"}, 400)
+        else:
+            self._reply({"status":"KARMA online"})
+
+def auto_miner():
+    while True:
+        time.sleep(10)
+        new_block({"action":"auto-mine"})
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    threading.Thread(target=auto_miner, daemon=True).start()
+    print(f"KARMA NODE + AMM POOL – Port {port}")
+    HTTPServer(("0.0.0.0", port), API).serve_forever()
