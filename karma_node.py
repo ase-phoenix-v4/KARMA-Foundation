@@ -94,8 +94,15 @@ class API(BaseHTTPRequestHandler):
             self._reply({"address": addr, "karma": karma_scores.get(addr, 0)})
         elif p == "/api/top":
             self._reply({"top": get_top_karma()})
+        
+elif p == "/api/karma":
+            addr = q.get("address", ["KARMA_ARCHITECT"])[0]
+            self._reply({"address": addr, "karma": karma_scores.get(addr, 0)})
+        elif p == "/api/top":
+            sorted_karma = sorted(karma_scores.items(), key=lambda x: x[1], reverse=True)
+            top = [{"address": a, "karma": k} for a, k in sorted_karma[:10]]
+            self._reply({"top": top})
         else: self._reply({"status":"KARMA online"})
-
 def auto_miner():
     while True:
         time.sleep(10)
