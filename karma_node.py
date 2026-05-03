@@ -1,7 +1,8 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
-import json, time, hashlib, os, threading
+import json, time, hashlib, os, threading, asyncio, websockets
 
+# --- GENESIS ---
 GENESIS = {
     "index": 0, "timestamp": "2026-05-03 10:00:00",
     "data": {"action": "genesis", "supply": 1000000000, "architect": {"address": "KARMA_ARCHITECT", "share": 230000000}},
@@ -12,6 +13,7 @@ chain = [GENESIS]
 chain_lock = threading.Lock()
 balances = {"KARMA_ARCHITECT": 230000000}
 
+# --- AMM POOLS ---
 pool_usdc = {"karma": 1000000.0, "token": 1000.0, "k": 1000000.0*1000.0, "fee_percent": 0.3}
 pool_pol = {"karma": 2000000.0, "token": 5000.0, "k": 2000000.0*5000.0, "fee_percent": 0.3}
 
@@ -42,11 +44,38 @@ def new_block(data):
         chain.append(b)
         return b
 
+# --- WebSocket ---
+connected_clients = set()
+
+async def ws_handler(websocket, path=None):
+    connected_clients.add(websocket)
+    try:
+        await websocket.send(json.dumps({"type":"connected","blocks":len(chain)}))
+        async for _ in websocket:
+            pass
+    finally:
+        connected_clients.discard(websocket)
+
+async def broadcast_block(block):
+    if connected_clients:
+        msg = json.dumps({"type":"new_block","block":block,"total_blocks":len(chain)})
+        await asyncio.gather(*[client.send(msg) for client in list(connected_clients)])
+
+def run_ws_server():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    ws_port = int(os.environ.get("PORT", 10000)) + 1
+    start_server = websockets.serve(ws_handler, "0.0.0.0", ws_port)
+    loop.run_until_complete(start_server)
+    loop.run_forever()
+
+# --- HTTP API ---
 class API(BaseHTTPRequestHandler):
     def _reply(self, data, code=200, ctype="application/json"):
         body = json.dumps(data).encode() if isinstance(data, dict) else data.encode()
         self.send_response(code)
         self.send_header("Content-type", ctype)
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(body)
 
@@ -87,10 +116,16 @@ class API(BaseHTTPRequestHandler):
 def auto_miner():
     while True:
         time.sleep(10)
-        new_block({"action":"auto-mine"})
+        block = new_block({"action":"auto-mine"})
+        try:
+            loop = asyncio.new_event_loop()
+            loop.run_until_complete(broadcast_block(block))
+        except:
+            pass
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     threading.Thread(target=auto_miner, daemon=True).start()
-    print(f"KARMA NODE + 2 POOLS - Port {port}")
+    threading.Thread(target=run_ws_server, daemon=True).start()
+    print(f"KARMA NODE + WebSocket – Port {port}")
     HTTPServer(("0.0.0.0", port), API).serve_forever()
