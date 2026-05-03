@@ -1,8 +1,8 @@
-
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import json, time, hashlib, os, threading
 
+# --- 1. GENESIS ---
 GENESIS = {
     "index": 0, "timestamp": "2026-05-03 10:00:00",
     "data": {"action": "genesis", "supply": 1000000000, "architect": {"address": "KARMA_ARCHITECT", "share": 230000000}},
@@ -13,30 +13,40 @@ chain = [GENESIS]
 chain_lock = threading.Lock()
 balances = {"KARMA_ARCHITECT": 230000000}
 
-pool = {
+# --- 2. AMM POOLS ---
+# Pool 1: KARMA/USDC
+pool_usdc = {
     "karma": 1000000.0,
-    "usdc": 1000.0,
+    "token": 1000.0,
     "k": 1000000.0 * 1000.0,
     "fee_percent": 0.3
 }
 
-def swap_karma_for_usdc(amount_in):
-    fee = amount_in * pool["fee_percent"] / 100
-    net = amount_in - fee
-    out = pool["usdc"] - (pool["k"] / (pool["karma"] + net))
-    pool["karma"] += amount_in
-    pool["usdc"] -= out
-    pool["k"] = pool["karma"] * pool["usdc"]
-    return round(out, 6), round(pool["usdc"] / pool["karma"], 6)
+# Pool 2: KARMA/POL
+pool_pol = {
+    "karma": 2000000.0,
+    "token": 5000.0,
+    "k": 2000000.0 * 5000.0,
+    "fee_percent": 0.3
+}
 
-def swap_usdc_for_karma(amount_in):
+def swap_karma_for_token(pool, amount_in):
     fee = amount_in * pool["fee_percent"] / 100
     net = amount_in - fee
-    out = pool["karma"] - (pool["k"] / (pool["usdc"] + net))
-    pool["usdc"] += amount_in
+    out = pool["token"] - (pool["k"] / (pool["karma"] + net))
+    pool["karma"] += amount_in
+    pool["token"] -= out
+    pool["k"] = pool["karma"] * pool["token"]
+    return round(out, 6), round(pool["token"] / pool["karma"], 6)
+
+def swap_token_for_karma(pool, amount_in):
+    fee = amount_in * pool["fee_percent"] / 100
+    net = amount_in - fee
+    out = pool["karma"] - (pool["k"] / (pool["token"] + net))
+    pool["token"] += amount_in
     pool["karma"] -= out
-    pool["k"] = pool["karma"] * pool["usdc"]
-    return round(out, 6), round(pool["usdc"] / pool["karma"], 6)
+    pool["k"] = pool["karma"] * pool["token"]
+    return round(out, 6), round(pool["token"] / pool["karma"], 6)
 
 def new_block(data):
     with chain_lock:
@@ -58,21 +68,42 @@ class API(BaseHTTPRequestHandler):
     def do_GET(self):
         p = urlparse(self.path).path
         q = parse_qs(urlparse(self.path).query)
+        
         if p == "/api/pulse":
             self._reply({"network":"KARMA Iron Testnet","blocks":len(chain),"status":"online"})
+        
+        # --- USDC Pool ---
         elif p == "/api/pool":
-            self._reply({"pool":"KARMA/USDC","karma":pool["karma"],"usdc":pool["usdc"],"price":round(pool["usdc"]/pool["karma"],6)})
+            self._reply({"pool":"KARMA/USDC","karma":pool_usdc["karma"],"usdc":pool_usdc["token"],"price":round(pool_usdc["token"]/pool_usdc["karma"],6)})
+        
         elif p == "/api/swap":
             d = q.get("direction",[""])[0]
             a = float(q.get("amount",["0"])[0])
             if d == "karma_to_usdc" and a > 0:
-                out, price = swap_karma_for_usdc(a)
+                out, price = swap_karma_for_token(pool_usdc, a)
                 self._reply({"swap":f"{a} KARMA -> {out} USDC","new_price":price})
             elif d == "usdc_to_karma" and a > 0:
-                out, price = swap_usdc_for_karma(a)
+                out, price = swap_token_for_karma(pool_usdc, a)
                 self._reply({"swap":f"{a} USDC -> {out} KARMA","new_price":price})
             else:
                 self._reply({"error":"use direction=karma_to_usdc or usdc_to_karma and amount>0"}, 400)
+        
+        # --- POL Pool ---
+        elif p == "/api/pool/pol":
+            self._reply({"pool":"KARMA/POL","karma":pool_pol["karma"],"pol":pool_pol["token"],"price":round(pool_pol["token"]/pool_pol["karma"],6)})
+        
+        elif p == "/api/swap/pol":
+            d = q.get("direction",[""])[0]
+            a = float(q.get("amount",["0"])[0])
+            if d == "karma_to_pol" and a > 0:
+                out, price = swap_karma_for_token(pool_pol, a)
+                self._reply({"swap":f"{a} KARMA -> {out} POL","new_price":price})
+            elif d == "pol_to_karma" and a > 0:
+                out, price = swap_token_for_karma(pool_pol, a)
+                self._reply({"swap":f"{a} POL -> {out} KARMA","new_price":price})
+            else:
+                self._reply({"error":"use direction=karma_to_pol or pol_to_karma and amount>0"}, 400)
+        
         else:
             self._reply({"status":"KARMA online"})
 
@@ -84,5 +115,5 @@ def auto_miner():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     threading.Thread(target=auto_miner, daemon=True).start()
-    print(f"KARMA NODE + AMM POOL - Port {port}")
+    print(f"KARMA NODE + 2 AMM POOLS (USDC & POL) - Port {port}")
     HTTPServer(("0.0.0.0", port), API).serve_forever()
