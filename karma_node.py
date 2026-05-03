@@ -70,7 +70,7 @@ class API(BaseHTTPRequestHandler):
 
     def do_GET(self):
         p = urlparse(self.path).path; q = parse_qs(urlparse(self.path).query)
-        if p == "/api/pulse": self._reply({"network":"KARMA Iron Testnet","blocks":len(chain),"status":"online","consensus":"Proof-of-Karma"})
+if p == "/api/pulse": self._reply({"network":"KARMA Iron Testnet","blocks":len(chain),"status":"online","consensus":"Proof-of-Karma","karma_threshold":karma_threshold})
         elif p == "/api/pool": self._reply({"pool":"KARMA/USDC","karma":pool_usdc["karma"],"usdc":pool_usdc["token"],"price":round(pool_usdc["token"]/pool_usdc["karma"],6)})
         elif p == "/api/pool/pol": self._reply({"pool":"KARMA/POL","karma":pool_pol["karma"],"pol":pool_pol["token"],"price":round(pool_pol["token"]/pool_pol["karma"],6)})
         elif p == "/api/swap":
