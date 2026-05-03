@@ -1,1 +1,73 @@
-https://github.com/ase-phoenix-v4/KARMA-Foundation/new/main?filename=contracts%2FKARMA_Core.sol&value=%2F%2F%20SPDX-License-Identifier%3A%20MIT%0Apragma%20solidity%20%5E0.8.20%3B%0A%0A%2F**%0A%20*%20%40title%20KARMA%20NETWORK%20%E2%80%94%20Core%20Contract%20v2.0%0A%20*%20%40dev%20Tokenomics%3A%20Architect%2030%25%2C%20Igor%201%25%2C%20Team%205%25%2C%20Investors%2020%25%2C%20Public%2020%25%2C%20DAO%2024%25%0A%20*%20%20%20%20%20%20Burn%2010%25%2C%20LP%205%25%2C%20Bonding%20Curve%2C%20Anti-Whale%2C%20Multisig%2C%20Staking%2025%25%20APY%0A%20*%2F%0A%0Acontract%20KARMANetwork%20%7B%0A%20%20%20%20string%20public%20constant%20name%20%3D%20%22KARMA%20Network%22%3B%0A%20%20%20%20string%20public%20constant%20symbol%20%3D%20%22KARMA%22%3B%0A%20%20%20%20uint8%20public%20constant%20decimals%20%3D%2018%3B%0A%20%20%20%20uint256%20public%20constant%20TOTAL_SUPPLY%20%3D%201_000_000_000%20*%2010**18%3B%0A%0A%20%20%20%20uint256%20public%20constant%20ARCHITECT_SHARE%20%3D%20300_000_000%20*%2010**18%3B%0A%20%20%20%20uint256%20public%20constant%20IGOR_SHARE%20%3D%2010_000_000%20*%2010**18%3B%0A%20%20%20%20uint256%20public%20constant%20TEAM_SHARE%20%3D%2050_000_000%20*%2010**18%3B%0A%20%20%20%20uint256%20public%20constant%20INVESTOR_SHARE%20%3D%20200_000_000%20*%2010**18%3B%0A%20%20%20%20uint256%20public%20constant%20PUBLIC_SHARE%20%3D%20200_000_000%20*%2010**18%3B%0A%20%20%20%20uint256%20public%20constant%20DAO_SHARE%20%3D%20240_000_000%20*%2010**18%3B%0A%0A%20%20%20%20address%20public%20immutable%20ARCHITECT%3B%0A%20%20%20%20address%20public%20IGOR%3B%0A%20%20%20%20address%20public%20constant%20BURN_ADDRESS%20%3D%20address(0xdead)%3B%0A%20%20%20%20address%20public%20TEAM_WALLET%3B%0A%20%20%20%20address%20public%20INVESTOR_WALLET%3B%0A%20%20%20%20address%20public%20DAO_WALLET%3B%0A%20%20%20%20address%20public%20LIQUIDITY_POOL%3B%0A%0A%20%20%20%20address%5B%5D%20public%20owners%3B%0A%20%20%20%20mapping(address%20%3D%3E%20bool)%20public%20isOwner%3B%0A%0A%20%20%20%20uint256%20public%20immutable%20VESTING_START%3B%0A%20%20%20%20uint256%20public%20architectUnlocked%3B%0A%0A%20%20%20%20uint256%20public%20constant%20BASE_PRICE%20%3D%200.0001%20ether%3B%0A%20%20%20%20uint256%20public%20constant%20CURVE_SLOPE%20%3D%200.00000001%20ether%3B%0A%20%20%20%20uint256%20public%20constant%20MAX_HOLD%20%3D%20TOTAL_SUPPLY%20%2F%20100%3B%0A%20%20%20%20uint256%20public%20constant%20MAX_SELL_PER_HOUR%20%3D%20TOTAL_SUPPLY%20%2F%20200%3B%0A%0A%20%20%20%20uint256%20public%20burnRate%20%3D%2010%3B%0A%20%20%20%20uint256%20public%20lpRate%20%3D%205%3B%0A%20%20%20%20uint256%20public%20constant%20STAKING_APY%20%3D%2025%3B%0A%20%20%20%20uint256%20public%20architectRewards%3B%0A%0A%20%20%20%20mapping(address%20%3D%3E%20uint256)%20public%20balanceOf%3B%0A%20%20%20%20mapping(address%20%3D%3E%20mapping(address%20%3D%3E%20uint256))%20public%20allowance%3B%0A%20%20%20%20mapping(address%20%3D%3E%20uint256)%20public%20lastSellTimestamp%3B%0A%20%20%20%20mapping(address%20%3D%3E%20uint256)%20public%20soldInWindow%3B%0A%20%20%20%20uint256%20public%20totalSupply%3B%0A%20%20%20%20bool%20public%20isInitialized%3B%0A%0A%20%20%20%20event%20Transfer(address%20indexed%20from%2C%20address%20indexed%20to%2C%20uint256%20value)%3B%0A%20%20%20%20event%20Approval(address%20indexed%20owner%2C%20address%20indexed%20spender%2C%20uint256%20value)%3B%0A%20%20%20%20event%20Burn(address%20indexed%20from%2C%20uint256%20value)%3B%0A%20%20%20%20event%20LiquidityAdded(uint256%20value)%3B%0A%0A%20%20%20%20modifier%20onlyOwner()%20%7B%20require(isOwner%5Bmsg.sender%5D)%3B%20_%3B%20%7D%0A%20%20%20%20modifier%20onlyArchitect()%20%7B%20require(msg.sender%20%3D%3D%20ARCHITECT)%3B%20_%3B%20%7D%0A%0A%20%20%20%20constructor()%20%7B%0A%20%20%20%20%20%20%20%20ARCHITECT%20%3D%20msg.sender%3B%0A%20%20%20%20%20%20%20%20VESTING_START%20%3D%20block.timestamp%3B%0A%20%20%20%20%20%20%20%20owners.push(msg.sender)%3B%0A%20%20%20%20%20%20%20%20isOwner%5Bmsg.sender%5D%20%3D%20true%3B%0A%20%20%20%20%20%20%20%20_mint(address(this)%2C%20TOTAL_SUPPLY)%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20initialize(address%20_igor%2C%20address%20_team%2C%20address%20_inv%2C%20address%20_dao%2C%20address%20_lp)%20external%20onlyArchitect%20%7B%0A%20%20%20%20%20%20%20%20require(!isInitialized)%3B%20isInitialized%20%3D%20true%3B%0A%20%20%20%20%20%20%20%20IGOR%20%3D%20_igor%3B%20TEAM_WALLET%20%3D%20_team%3B%20INVESTOR_WALLET%20%3D%20_inv%3B%20DAO_WALLET%20%3D%20_dao%3B%20LIQUIDITY_POOL%20%3D%20_lp%3B%0A%20%20%20%20%20%20%20%20_transfer(address(this)%2C%20_team%2C%20TEAM_SHARE)%3B%0A%20%20%20%20%20%20%20%20_transfer(address(this)%2C%20_inv%2C%20INVESTOR_SHARE)%3B%0A%20%20%20%20%20%20%20%20_transfer(address(this)%2C%20_dao%2C%20DAO_SHARE)%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20architectUnlockable()%20public%20view%20returns%20(uint256)%20%7B%0A%20%20%20%20%20%20%20%20uint256%20elapsed%20%3D%20block.timestamp%20-%20VESTING_START%3B%0A%20%20%20%20%20%20%20%20if%20(elapsed%20%3C%20365%20days)%20return%200%3B%0A%20%20%20%20%20%20%20%20uint256%20years%20%3D%20elapsed%20%2F%20365%20days%3B%0A%20%20%20%20%20%20%20%20if%20(years%20%3E%3D%203)%20return%20ARCHITECT_SHARE%3B%0A%20%20%20%20%20%20%20%20uint256%20total%20%3D%20(ARCHITECT_SHARE%20*%20years)%20%2F%203%3B%0A%20%20%20%20%20%20%20%20if%20(total%20%3C%3D%20architectUnlocked)%20return%200%3B%0A%20%20%20%20%20%20%20%20return%20total%20-%20architectUnlocked%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20architectUnlock()%20external%20onlyArchitect%20%7B%0A%20%20%20%20%20%20%20%20uint256%20amount%20%3D%20architectUnlockable()%3B%0A%20%20%20%20%20%20%20%20require(amount%20%3E%200)%3B%0A%20%20%20%20%20%20%20%20uint256%20rewards%20%3D%20architectRewards%3B%20architectRewards%20%3D%200%3B%0A%20%20%20%20%20%20%20%20architectUnlocked%20%2B%3D%20amount%3B%0A%20%20%20%20%20%20%20%20_transfer(address(this)%2C%20ARCHITECT%2C%20amount%20%2B%20rewards)%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20igorUnlock()%20external%20%7B%0A%20%20%20%20%20%20%20%20require(msg.sender%20%3D%3D%20IGOR)%3B%0A%20%20%20%20%20%20%20%20require(block.timestamp%20%3E%3D%20VESTING_START%20%2B%20730%20days)%3B%0A%20%20%20%20%20%20%20%20_transfer(address(this)%2C%20IGOR%2C%20IGOR_SHARE)%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20updateRewards()%20internal%20%7B%0A%20%20%20%20%20%20%20%20uint256%20elapsed%20%3D%20block.timestamp%20-%20VESTING_START%3B%0A%20%20%20%20%20%20%20%20uint256%20years%20%3D%20elapsed%20%2F%20365%20days%3B%0A%20%20%20%20%20%20%20%20architectRewards%20%3D%20(ARCHITECT_SHARE%20*%20STAKING_APY%20*%20years)%20%2F%20100%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20currentPrice()%20public%20view%20returns%20(uint256)%20%7B%0A%20%20%20%20%20%20%20%20uint256%20sold%20%3D%20TOTAL_SUPPLY%20-%20balanceOf%5Baddress(this)%5D%3B%0A%20%20%20%20%20%20%20%20return%20BASE_PRICE%20%2B%20(sold%20*%20CURVE_SLOPE)%20%2F%2010**18%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20buyTokens()%20external%20payable%20%7B%0A%20%20%20%20%20%20%20%20require(isInitialized)%3B%20require(LIQUIDITY_POOL%20!%3D%20address(0))%3B%0A%20%20%20%20%20%20%20%20uint256%20price%20%3D%20currentPrice()%3B%0A%20%20%20%20%20%20%20%20uint256%20amt%20%3D%20(msg.value%20*%2010**18)%20%2F%20price%3B%0A%20%20%20%20%20%20%20%20require(balanceOf%5Baddress(this)%5D%20%3E%3D%20amt)%3B%0A%20%20%20%20%20%20%20%20require(balanceOf%5Bmsg.sender%5D%20%2B%20amt%20%3C%3D%20MAX_HOLD)%3B%0A%20%20%20%20%20%20%20%20uint256%20burnAmt%20%3D%20(amt%20*%20burnRate)%20%2F%20100%3B%0A%20%20%20%20%20%20%20%20uint256%20lpAmt%20%3D%20(amt%20*%20lpRate)%20%2F%20100%3B%0A%20%20%20%20%20%20%20%20_transfer(address(this)%2C%20BURN_ADDRESS%2C%20burnAmt)%3B%0A%20%20%20%20%20%20%20%20_transfer(address(this)%2C%20LIQUIDITY_POOL%2C%20lpAmt)%3B%0A%20%20%20%20%20%20%20%20_transfer(address(this)%2C%20msg.sender%2C%20amt%20-%20burnAmt%20-%20lpAmt)%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20sellTokens(uint256%20amount)%20external%20%7B%0A%20%20%20%20%20%20%20%20require(amount%20%3C%3D%20MAX_SELL_PER_HOUR)%3B%0A%20%20%20%20%20%20%20%20if%20(block.timestamp%20-%20lastSellTimestamp%5Bmsg.sender%5D%20%3E%3D%201%20hours)%20soldInWindow%5Bmsg.sender%5D%20%3D%200%3B%0A%20%20%20%20%20%20%20%20require(soldInWindow%5Bmsg.sender%5D%20%2B%20amount%20%3C%3D%20MAX_SELL_PER_HOUR)%3B%0A%20%20%20%20%20%20%20%20lastSellTimestamp%5Bmsg.sender%5D%20%3D%20block.timestamp%3B%0A%20%20%20%20%20%20%20%20soldInWindow%5Bmsg.sender%5D%20%2B%3D%20amount%3B%0A%20%20%20%20%20%20%20%20_transfer(msg.sender%2C%20address(this)%2C%20amount)%3B%0A%20%20%20%20%20%20%20%20payable(msg.sender).transfer(amount%20*%20currentPrice()%20%2F%2010**18)%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20transfer(address%20to%2C%20uint256%20value)%20external%20returns%20(bool)%20%7B%0A%20%20%20%20%20%20%20%20_transfer(msg.sender%2C%20to%2C%20value)%3B%20return%20true%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20approve(address%20s%2C%20uint256%20v)%20external%20returns%20(bool)%20%7B%0A%20%20%20%20%20%20%20%20allowance%5Bmsg.sender%5D%5Bs%5D%20%3D%20v%3B%20return%20true%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20transferFrom(address%20f%2C%20address%20t%2C%20uint256%20v)%20external%20returns%20(bool)%20%7B%0A%20%20%20%20%20%20%20%20require(allowance%5Bf%5D%5Bmsg.sender%5D%20%3E%3D%20v)%3B%0A%20%20%20%20%20%20%20%20allowance%5Bf%5D%5Bmsg.sender%5D%20-%3D%20v%3B%0A%20%20%20%20%20%20%20%20_transfer(f%2C%20t%2C%20v)%3B%20return%20true%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20_transfer(address%20from%2C%20address%20to%2C%20uint256%20value)%20internal%20%7B%0A%20%20%20%20%20%20%20%20require(from%20!%3D%20address(0))%3B%20require(to%20!%3D%20address(0))%3B%0A%20%20%20%20%20%20%20%20require(balanceOf%5Bfrom%5D%20%3E%3D%20value)%3B%0A%20%20%20%20%20%20%20%20balanceOf%5Bfrom%5D%20-%3D%20value%3B%20balanceOf%5Bto%5D%20%2B%3D%20value%3B%0A%20%20%20%20%20%20%20%20updateRewards()%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20_mint(address%20to%2C%20uint256%20value)%20internal%20%7B%0A%20%20%20%20%20%20%20%20require(totalSupply%20%2B%20value%20%3C%3D%20TOTAL_SUPPLY)%3B%0A%20%20%20%20%20%20%20%20balanceOf%5Bto%5D%20%2B%3D%20value%3B%20totalSupply%20%2B%3D%20value%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20addOwner(address%20o)%20external%20onlyOwner%20%7B%0A%20%20%20%20%20%20%20%20require(!isOwner%5Bo%5D)%3B%20owners.push(o)%3B%20isOwner%5Bo%5D%20%3D%20true%3B%0A%20%20%20%20%7D%0A%0A%20%20%20%20function%20updateRates(uint256%20b%2C%20uint256%20l)%20external%20onlyOwner%20%7B%20burnRate%20%3D%20b%3B%20lpRate%20%3D%20l%3B%20%7D%0A%7D
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+/**
+ * @title KARMA NETWORK — Core Contract v2.0
+ * @dev Tokenomics: Architect 30%, Igor 1%, Team 5%, Investors 20%, Public 20%, DAO 24%
+ *      Burn 10%, LP 5%, Bonding Curve, Anti-Whale, Multisig, Staking 25% APY
+ */
+
+contract KARMANetwork {
+    string public constant name = "KARMA Network";
+    string public constant symbol = "KARMA";
+    uint8 public constant decimals = 18;
+    uint256 public constant TOTAL_SUPPLY = 1_000_000_000 * 10**18;
+
+    uint256 public constant ARCHITECT_SHARE = 300_000_000 * 10**18;
+    uint256 public constant IGOR_SHARE = 10_000_000 * 10**18;
+    uint256 public constant TEAM_SHARE = 50_000_000 * 10**18;
+    uint256 public constant INVESTOR_SHARE = 200_000_000 * 10**18;
+    uint256 public constant PUBLIC_SHARE = 200_000_000 * 10**18;
+    uint256 public constant DAO_SHARE = 240_000_000 * 10**18;
+
+    address public immutable ARCHITECT;
+    address public IGOR;
+    address public constant BURN_ADDRESS = address(0xdead);
+    address public TEAM_WALLET;
+    address public INVESTOR_WALLET;
+    address public DAO_WALLET;
+    address public LIQUIDITY_POOL;
+
+    address[] public owners;
+    mapping(address => bool) public isOwner;
+    uint256 public immutable VESTING_START;
+    uint256 public architectUnlocked;
+    uint256 public constant BASE_PRICE = 0.0001 ether;
+    uint256 public constant CURVE_SLOPE = 0.00000001 ether;
+    uint256 public constant MAX_HOLD = TOTAL_SUPPLY / 100;
+    uint256 public constant MAX_SELL_PER_HOUR = TOTAL_SUPPLY / 200;
+    uint256 public burnRate = 10;
+    uint256 public lpRate = 5;
+    uint256 public constant STAKING_APY = 25;
+    uint256 public architectRewards;
+
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+    mapping(address => uint256) public lastSellTimestamp;
+    mapping(address => uint256) public soldInWindow;
+    uint256 public totalSupply;
+    bool public isInitialized;
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+    event Burn(address indexed from, uint256 value);
+    event LiquidityAdded(uint256 value);
+
+    modifier onlyOwner() { require(isOwner[msg.sender]); _; }
+    modifier onlyArchitect() { require(msg.sender == ARCHITECT); _; }
+
+    constructor() {
+        ARCHITECT = msg.sender;
+        VESTING_START = block.timestamp;
+        owners.push(msg.sender);
+        isOwner[msg.sender] = true;
+        _mint(address(this), TOTAL_SUPPLY);
+    }
+
+    function initialize(address _igor, address _team, address _inv, address _dao, address _lp) external onlyArchitect {
+        require(!isInitialized); isInitialized = true;
+        IGOR = _igor; TEAM_WALLET = _team; INVESTOR_WALLET = _inv; DAO_WALLET = _dao; LIQUIDITY_POOL = _lp;
+        _transfer(address(this), _team, TEAM_SHARE);
+        _transfer(address(this), _inv, INVESTOR_SHARE);
+        _transfer(address(this), _dao, DAO_SHARE);
+    }
