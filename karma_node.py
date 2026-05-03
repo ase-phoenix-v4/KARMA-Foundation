@@ -11,7 +11,23 @@ GENESIS = {
 GENESIS["hash"] = hashlib.sha256(json.dumps(GENESIS, sort_keys=True).encode()).hexdigest()
 chain = [GENESIS]
 chain_lock = threading.Lock()
-balances = {"KARMA_ARCHITECT": 230000000}
+balances = {"KARMA_ARCHITECT": 230000000}# --- Proof-of-Karma ---
+karma_scores = {"KARMA_ARCHITECT": 300}  # Архитектор имеет максимум
+karma_threshold = 10  # Минимум кармы для майнинга
+
+def update_karma(address, action_type):
+    if address not in karma_scores:
+        karma_scores[address] = 0
+    if action_type == "creation":
+        karma_scores[address] += 3
+    elif action_type == "spam":
+        karma_scores[address] -= 5
+    elif action_type == "swap":
+        karma_scores[address] += 1
+
+def get_top_karma(n=10):
+    sorted_karma = sorted(karma_scores.items(), key=lambda x: x[1], reverse=True)
+    return [{"address": addr, "karma": score} for addr, score in sorted_karma[:n]]
 
 pool_usdc = {"karma": 1000000.0, "token": 1000.0, "k": 1000000.0*1000.0, "fee_percent": 0.3}
 pool_pol = {"karma": 2000000.0, "token": 5000.0, "k": 2000000.0*5000.0, "fee_percent": 0.3}
