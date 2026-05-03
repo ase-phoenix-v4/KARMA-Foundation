@@ -1,6 +1,6 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
-import json, time, hashlib, os, threading
+import json, time, hashlib, os, threading, urllib.request
 
 GENESIS = {
     "index": 0,
@@ -27,9 +27,25 @@ def new_block(data):
         chain.append(b)
         return b
 
+PEERS = [
+    "https://karma-node-2.onrender.com"
+]
+
+def sync_from_peers():
+    for peer in PEERS:
+        try:
+            r = urllib.request.urlopen(f"{peer}/api/blocks")
+            data = json.loads(r.read())
+            for block in data.get("blocks", []):
+                if block["index"] >= len(chain):
+                    chain.append(block)
+        except:
+            pass
+
 def auto_miner():
     while True:
         time.sleep(10)
+        sync_from_peers()
         new_block({"action": "auto-mine", "reward": 0})
 
 class API(BaseHTTPRequestHandler):
