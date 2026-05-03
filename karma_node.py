@@ -1,8 +1,8 @@
+
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import json, time, hashlib, os, threading
 
-# --- 1. GENESIS ---
 GENESIS = {
     "index": 0, "timestamp": "2026-05-03 10:00:00",
     "data": {"action": "genesis", "supply": 1000000000, "architect": {"address": "KARMA_ARCHITECT", "share": 230000000}},
@@ -13,7 +13,6 @@ chain = [GENESIS]
 chain_lock = threading.Lock()
 balances = {"KARMA_ARCHITECT": 230000000}
 
-# --- 2. AMM POOL ---
 pool = {
     "karma": 1000000.0,
     "usdc": 1000.0,
@@ -51,7 +50,10 @@ def new_block(data):
 class API(BaseHTTPRequestHandler):
     def _reply(self, data, code=200, ctype="application/json"):
         body = json.dumps(data).encode() if isinstance(data, dict) else data.encode()
-        self.send_response(code); self.send_header("Content-type", ctype); self.end_headers(); self.wfile.write(body)
+        self.send_response(code)
+        self.send_header("Content-type", ctype)
+        self.end_headers()
+        self.wfile.write(body)
 
     def do_GET(self):
         p = urlparse(self.path).path
@@ -65,10 +67,10 @@ class API(BaseHTTPRequestHandler):
             a = float(q.get("amount",["0"])[0])
             if d == "karma_to_usdc" and a > 0:
                 out, price = swap_karma_for_usdc(a)
-                self._reply({"swap":f"{a} KARMA → {out} USDC","new_price":price})
+                self._reply({"swap":f"{a} KARMA -> {out} USDC","new_price":price})
             elif d == "usdc_to_karma" and a > 0:
                 out, price = swap_usdc_for_karma(a)
-                self._reply({"swap":f"{a} USDC → {out} KARMA","new_price":price})
+                self._reply({"swap":f"{a} USDC -> {out} KARMA","new_price":price})
             else:
                 self._reply({"error":"use direction=karma_to_usdc or usdc_to_karma and amount>0"}, 400)
         else:
@@ -82,5 +84,5 @@ def auto_miner():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     threading.Thread(target=auto_miner, daemon=True).start()
-    print(f"KARMA NODE + AMM POOL – Port {port}")
+    print(f"KARMA NODE + AMM POOL - Port {port}")
     HTTPServer(("0.0.0.0", port), API).serve_forever()
