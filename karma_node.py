@@ -50,7 +50,17 @@ def swap_token_for_karma(pool, amount_in):
     pool["k"] = pool["karma"] * pool["token"]
     return round(out, 6), round(pool["token"] / pool["karma"], 6)
 
-def new_block(data):
+def new_block(data, miner="KARMA_ARCHITECT"):
+    miner_karma = karma_scores.get(miner, 0)
+    if miner_karma < karma_threshold:
+        return None
+    with chain_lock:
+        prev = chain[-1]
+        b = {"index": prev["index"]+1, "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+             "data": data, "previous_hash": prev["hash"], "hash": "", "miner": miner, "karma": miner_karma}
+        b["hash"] = hashlib.sha256(json.dumps(b, sort_keys=True).encode()).hexdigest()
+        chain.append(b)
+        return b
     with chain_lock:
         prev = chain[-1]
         b = {"index": prev["index"]+1, "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
