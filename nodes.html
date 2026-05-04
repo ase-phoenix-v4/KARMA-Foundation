@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KARMA Core Nodes</title>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#0a0a0a; color:#e0e0e0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; padding:20px; }
+    h2 { color:#d4a843; margin-bottom:12px; text-align:center; }
+    .nodes { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; }
+    .node { background:#0a0a0a; border:1px solid #1a1a1a; border-radius:16px; padding:20px; transition:0.3s; }
+    .node:hover { border-color:#d4a843; }
+    .node-name { color:#d4a843; font-weight:700; font-size:1.2rem; }
+    .node-role { color:#888; font-size:0.9rem; margin-top:4px; }
+    .node-status { display:inline-block; background:rgba(0,230,118,0.1); color:#00e676; padding:4px 12px; border-radius:20px; font-size:0.8rem; margin-top:8px; }
+    .node-url { color:#888; font-size:0.75rem; margin-top:6px; }
+</style>
+</head>
+<body>
+    <h2>🛡️ KARMA Core Nodes</h2>
+    <div class="nodes">
+        <div class="node">
+            <div class="node-name">⚓ Core Validator</div>
+            <div class="node-role">Genesis Keeper · Block Finality</div>
+            <div class="node-status">● Online</div>
+            <div class="node-url">karma-foundation.onrender.com</div>
+        </div>
+        <div class="node">
+            <div class="node-name">🧠 Neuro Classifier</div>
+            <div class="node-role">Intent Analyzer · AI Filter</div>
+            <div class="node-status">● Online</div>
+            <div class="node-url">karma-node2.onrender.com</div>
+        </div>
+        <div class="node">
+            <div class="node-name">🔮 AION Oracle</div>
+            <div class="node-role">Price Oracle · Economic Forecast</div>
+            <div class="node-status">● Online</div>
+            <div class="node-url">karma-node-3.onrender.com</div>
+        </div>
+    </div>
+</body>
+</html>
