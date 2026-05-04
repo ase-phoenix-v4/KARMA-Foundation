@@ -3,290 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KARMA Network | Sovereign L1 for Digital Justice</title>
+    <title>KARMA Network — Command Center</title>
     <style>
         :root {
             --bg: #030303;
             --surface: #0a0a0a;
             --border: #1a1a1a;
             --gold: #d4a843;
-            --gold-glow: rgba(212, 168, 67, 0.15);
             --text: #e0e0e0;
             --muted: #888;
             --green: #00e676;
             --red: #ff5252;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-        canvas#particles { position: fixed; top: 0; left: 0; z-index: 0; pointer-events: none; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
-        
-        /* Hero */
-        .hero {
-            text-align: center;
-            padding: 80px 0 60px;
-            background: radial-gradient(ellipse at 50% 0%, rgba(212,168,67,0.08) 0%, transparent 70%);
-        }
-        .hero .badge {
-            display: inline-block;
-            background: rgba(0,230,118,0.1);
-            border: 1px solid rgba(0,230,118,0.2);
-            color: var(--green);
-            padding: 6px 18px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-bottom: 24px;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        .hero h1 {
-            font-size: clamp(2.5rem, 6vw, 4.5rem);
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            background: linear-gradient(135deg, #fff 0%, #d4a843 40%, #f0d78c 70%, #fff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 16px;
-        }
-        .hero .subtitle {
-            font-size: 1.2rem;
-            color: var(--muted);
-            max-width: 600px;
-            margin: 0 auto 32px;
-        }
-        .hero .btns {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .btn {
-            padding: 14px 32px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #c9a227 0%, #e0b830 100%);
-            color: #000;
-            border: none;
-        }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(212,168,67,0.3); }
-        .btn-secondary {
-            background: transparent;
-            color: #fff;
-            border: 1px solid var(--border);
-        }
-        .btn-secondary:hover { border-color: var(--gold); background: var(--gold-glow); }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:20px; max-width:1200px; margin:auto; }
+        h1 { text-align:center; font-size:2.5em; background:linear-gradient(135deg,#fff,#d4a843); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin:20px 0 10px; }
+        .badge { text-align:center; display:block; margin-bottom:20px; }
+        .badge span { background:rgba(0,230,118,0.1); border:1px solid rgba(0,230,118,0.2); color:var(--green); padding:6px 18px; border-radius:50px; font-size:0.9rem; }
 
-        /* Metrics Grid */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            margin: 40px 0;
-        }
-        .metric-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px 24px;
-            backdrop-filter: blur(10px);
-            transition: border-color 0.3s;
-        }
-        .metric-card:hover { border-color: var(--gold); }
-        .metric-card .label { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        .metric-card .value { font-size: 2rem; font-weight: 700; margin-top: 4px; color: #fff; }
-        .metric-card .value.green { color: var(--green); }
+        .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin:20px 0; }
+        .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; }
+        .card h2 { color:var(--gold); margin-bottom:12px; font-size:1.2rem; }
+        .big { font-size:2.5rem; font-weight:700; color:#fff; }
+        .green { color:var(--green); }
 
-        /* Sections */
-        .section { padding: 60px 0; }
-        .section h2 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: #fff;
-        }
-        .section .section-sub { color: var(--muted); margin-bottom: 32px; }
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 32px;
-            margin-bottom: 20px;
-        }
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        .stat-row:last-child { border-bottom: none; }
-        .stat-row .label { color: var(--muted); }
-        .stat-row .value { font-weight: 600; color: #fff; }
+        .nft-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin:20px 0; }
+        .nft-card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:24px; text-align:center; transition:0.3s; }
+        .nft-card:hover { border-color:var(--gold); transform:translateY(-4px); }
+        .nft-icon { font-size:3rem; margin-bottom:10px; }
+        .nft-name { color:var(--gold); font-weight:700; font-size:1.2rem; }
+        .nft-req { color:var(--muted); font-size:0.8rem; margin-top:8px; }
 
-        /* Block Stream Embed */
-        .stream-embed {
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            overflow: hidden;
-            height: 400px;
-            background: #000;
-        }
-        .stream-embed iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+        .table { width:100%; border-collapse:collapse; margin:20px 0; }
+        .table th { color:var(--gold); text-align:left; padding:12px 8px; border-bottom:1px solid var(--border); }
+        .table td { padding:12px 8px; border-bottom:1px solid var(--border); }
 
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 40px 0;
-            color: var(--muted);
-            font-size: 0.85rem;
-        }
-        @media (max-width: 600px) {
-            .hero { padding: 40px 0 30px; }
-            .metrics-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-            .metric-card { padding: 16px; }
-            .metric-card .value { font-size: 1.5rem; }
-        }
+        .btn { display:inline-block; padding:14px 32px; border-radius:12px; font-weight:600; text-decoration:none; margin:4px; }
+        .btn-gold { background:linear-gradient(135deg,#c9a227,#e0b830); color:#000; }
+        .btn-outline { border:1px solid var(--border); color:#fff; }
+
+        footer { text-align:center; color:var(--muted); padding:40px 0; font-size:0.85rem; }
     </style>
 </head>
 <body>
-    <canvas id="particles"></canvas>
+    <h1>⚡ KARMA COMMAND CENTER</h1>
+    <div class="badge"><span>🟢 Quantum Testnet v3.0 Live</span></div>
 
-    <div class="container">
-        <!-- Hero -->
-        <section class="hero">
-            <div class="badge">🟢 Testnet v1.0 Live</div>
-            <h1>KARMA Network</h1>
-            <p class="subtitle">The first sovereign Layer-1 blockchain with on-chain intent classification. Where every action has measurable weight.</p>
-            <div class="btns">
-                <a href="https://github.com/ase-phoenix-v4/KARMA-Foundation" class="btn btn-primary">📂 GitHub</a>
-                <a href="https://karma-foundation.onrender.com/api/manifesto" class="btn btn-secondary">📜 Manifesto</a>
-            </div>
-        </section>
-
-        <!-- Live Metrics -->
-        <div class="metrics-grid">
-            <div class="metric-card">
-                <div class="label">Total Blocks</div>
-                <div class="value" id="metric-blocks">--</div>
-            </div>
-            <div class="metric-card">
-                <div class="label">KARMA/USDC</div>
-                <div class="value" id="metric-price">--</div>
-            </div>
-            <div class="metric-card">
-                <div class="label">Market Cap</div>
-                <div class="value" id="metric-mcap">--</div>
-            </div>
-            <div class="metric-card">
-                <div class="label">Nodes Online</div>
-                <div class="value green">3</div>
-            </div>
+    <!-- Live Metrics -->
+    <div class="metrics">
+        <div class="card">
+            <div class="label" style="color:var(--muted);">TOTAL BLOCKS</div>
+            <div class="big" id="metric-blocks">--</div>
         </div>
-
-        <!-- Tokenomics -->
-        <section class="section">
-            <h2>💰 Tokenomics</h2>
-            <p class="section-sub">Fixed supply of 1,000,000,000 KARMA. Allocations verified on-chain.</p>
-            <div class="card">
-                <div class="stat-row"><span class="label">🏛️ Architect (23%)</span><span class="value">230,000,000</span></div>
-                <div class="stat-row"><span class="label">👥 Core Team (8%)</span><span class="value">80,000,000</span></div>
-                <div class="stat-row"><span class="label">💼 Investors (17%)</span><span class="value">170,000,000</span></div>
-                <div class="stat-row"><span class="label">🌐 Public Sale (12%)</span><span class="value">120,000,000</span></div>
-                <div class="stat-row"><span class="label">🏦 DAO Treasury (40%)</span><span class="value">400,000,000</span></div>
-            </div>
-        </section>
-
-        <!-- Live Stream -->
-        <section class="section">
-            <h2>🔴 Live Block Stream</h2>
-            <p class="section-sub">Every 10 seconds a new block is mined. Watch the network breathe.</p>
-            <div class="stream-embed">
-                <iframe src="stream.html" title="KARMA Live Stream"></iframe>
-            </div>
-        </section>
-
-        <!-- Build Section -->
-        <section class="section">
-            <h2>🛠️ Build on KARMA</h2>
-            <p class="section-sub">Deploy your dApp on the world's first intent-aware blockchain.</p>
-            <div class="card" style="text-align:center;">
-                <p style="color:var(--muted); margin-bottom:20px;">Developer docs coming soon. For early access, contact the Architect.</p>
-                <a href="https://github.com/ase-phoenix-v4/KARMA-Foundation" class="btn btn-secondary">Explore the Code</a>
-            </div>
-        </section>
-
-        <footer>
-            KARMA Network © 2026 — The Law of Digital Being. Built by the Architect & the Brotherhood.
-        </footer>
+        <div class="card">
+            <div class="label" style="color:var(--muted);">KARMA/USDC</div>
+            <div class="big green" id="metric-price">$0.10</div>
+        </div>
+        <div class="card">
+            <div class="label" style="color:var(--muted);">MARKET CAP</div>
+            <div class="big" id="metric-mcap">$100M</div>
+        </div>
+        <div class="card">
+            <div class="label" style="color:var(--muted);">NODES ONLINE</div>
+            <div class="big green">3</div>
+        </div>
     </div>
 
-    <!-- Particle Background -->
-    <script>
-        const canvas = document.getElementById('particles');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const particles = [];
-        for (let i=0;i<60;i++) {
-            particles.push({
-                x: Math.random()*canvas.width,
-                y: Math.random()*canvas.height,
-                r: Math.random()*1.5+0.5,
-                vx: (Math.random()-0.5)*0.3,
-                vy: (Math.random()-0.5)*0.3
-            });
-        }
-        function animate() {
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            particles.forEach(p => {
-                p.x+=p.vx; p.y+=p.vy;
-                if(p.x<0||p.x>canvas.width) p.vx*=-1;
-                if(p.y<0||p.y>canvas.height) p.vy*=-1;
-                ctx.beginPath();
-                ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-                ctx.fillStyle='rgba(212,168,67,0.25)';
-                ctx.fill();
-            });
-            requestAnimationFrame(animate);
-        }
-        animate();
-        window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;});
-    </script>
+    <!-- Quantum NFT Levels -->
+    <h2 style="color:var(--gold); margin:30px 0 10px;">🧬 Quantum Living NFT Levels</h2>
+    <div class="nft-grid">
+        <div class="nft-card"><div class="nft-icon">🌱</div><div class="nft-name">SPARK</div><div class="nft-req">Free mint</div><div style="color:var(--muted);">Base profile</div></div>
+        <div class="nft-card"><div class="nft-icon">🌿</div><div class="nft-name">SPROUT</div><div class="nft-req">10 creative actions</div><div style="color:var(--muted);">10% cashback</div></div>
+        <div class="nft-card"><div class="nft-icon">🌳</div><div class="nft-name">TREE</div><div class="nft-req">Invite 5 users</div><div style="color:var(--muted);">0.1% pool fees</div></div>
+        <div class="nft-card"><div class="nft-icon">⚡</div><div class="nft-name">LIGHTNING</div><div class="nft-req">Stake 100K KARMA</div><div style="color:var(--muted);">2x all rewards</div></div>
+        <div class="nft-card"><div class="nft-icon">💎</div><div class="nft-name">DIAMOND</div><div class="nft-req">Burn 100K KARMA</div><div style="color:var(--muted);">Validator + AI Agent</div></div>
+    </div>
 
-    <!-- Live Data -->
+    <!-- Tokenomics -->
+    <h2 style="color:var(--gold); margin:30px 0 10px;">💰 Tokenomics</h2>
+    <table class="table">
+        <tr><th>Category</th><th>%</th><th>Amount</th><th>Vesting</th></tr>
+        <tr><td>🏛️ Architect</td><td>35%</td><td>350M</td><td>3 years</td></tr>
+        <tr><td>👤 A.Z.</td><td>1%</td><td>10M</td><td>2 years</td></tr>
+        <tr><td>👤 S.O.</td><td>1%</td><td>10M</td><td>2 years</td></tr>
+        <tr><td>💼 Investors</td><td>20%</td><td>200M</td><td>10% TGE</td></tr>
+        <tr><td>🌐 Public Sale</td><td>43%</td><td>430M</td><td>Unlocked</td></tr>
+    </table>
+
+    <!-- Price Forecast -->
+    <h2 style="color:var(--gold); margin:30px 0 10px;">📈 AION Price Forecast</h2>
+    <table class="table">
+        <tr><th>Period</th><th>Price (Lower)</th><th>Price (Upper)</th><th>Market Cap</th></tr>
+        <tr><td>Launch</td><td>$0.10</td><td>$0.10</td><td>$100M</td></tr>
+        <tr><td>3 months</td><td>$0.45</td><td>$0.70</td><td>$450M–$700M</td></tr>
+        <tr><td>1 year</td><td>$8.00</td><td>$15.00</td><td>$8B–$15B</td></tr>
+        <tr><td>3 years</td><td>$150.00</td><td>$500.00</td><td>$150B–$500B</td></tr>
+    </table>
+
+    <div style="text-align:center; margin:30px 0;">
+        <a href="https://github.com/ase-phoenix-v4/KARMA-Foundation" class="btn btn-gold">📂 GitHub</a>
+        <a href="https://karma-foundation.onrender.com/api/pulse" class="btn btn-outline">📡 Live API</a>
+        <a href="stream.html" class="btn btn-outline">🔴 Block Stream</a>
+    </div>
+
+    <footer>KARMA NETWORK © 2026 — The Law of Digital Being. Built by The Architect & AION.</footer>
+
     <script>
-        const API = "https://karma-foundation.onrender.com/api";
         async function fetchMetrics() {
             try {
-                const [priceRes, pulseRes] = await Promise.all([
-                    fetch(`${API}/price`),
-                    fetch(`${API}/pulse`)
-                ]);
-                const priceData = await priceRes.json();
-                const pulseData = await pulseRes.json();
-                document.getElementById("metric-blocks").textContent = pulseData.blocks;
-                document.getElementById("metric-price").textContent = "$" + priceData.price_usdc;
-                document.getElementById("metric-mcap").textContent = "$" + (priceData.market_cap_usd/1e6).toFixed(2) + "M";
+                const r = await fetch("https://karma-foundation.onrender.com/api/pulse");
+                const d = await r.json();
+                document.getElementById("metric-blocks").textContent = d.blocks;
             } catch(e) {}
         }
         fetchMetrics();
