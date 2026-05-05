@@ -5,155 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KARMA VAULT v1.0</title>
     <style>
-        :root {
-            --bg: #030303; --surface: #0a0a0a; --border: #1a1a1a;
-            --gold: #d4a843; --text: #e0e0e0; --muted: #888;
-            --green: #00e676; --red: #ff5252; --blue: #448aff;
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,sans-serif; padding:20px; max-width:800px; margin:auto; }
-        h1 { text-align:center; font-size:2.5em; background:linear-gradient(135deg,#fff,#d4a843); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin:20px 0; }
-        .badge { text-align:center; margin-bottom:20px; }
-        .badge span { background:rgba(0,230,118,0.1); border:1px solid rgba(0,230,118,0.2); color:var(--green); padding:6px 18px; border-radius:50px; font-size:0.9rem; }
-        .card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:24px; margin:16px 0; }
-        .card h2 { color:var(--gold); margin-bottom:12px; }
-        .input-group { display:flex; gap:10px; margin:10px 0; }
-        input { flex:1; background:#111; border:1px solid var(--border); color:#fff; padding:12px; border-radius:12px; font-size:1rem; }
-        .btn { padding:12px 24px; border-radius:12px; font-weight:600; cursor:pointer; border:none; font-size:1rem; }
-        .btn-gold { background:linear-gradient(135deg,#c9a227,#e0b830); color:#000; }
-        .btn-outline { background:transparent; border:1px solid var(--border); color:#fff; }
-        .result { margin-top:12px; padding:12px; background:#111; border-radius:12px; font-family:monospace; font-size:0.9rem; white-space:pre-wrap; }
-        .score { font-size:3rem; font-weight:700; text-align:center; color:#fff; }
-        .badge-display { text-align:center; font-size:1.5rem; color:var(--gold); margin:10px 0; }
-        .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-        .stat { background:rgba(255,255,255,0.03); border-radius:12px; padding:12px; text-align:center; }
-        .stat .value { font-size:1.5rem; font-weight:700; color:#fff; }
-        .stat .label { color:var(--muted); font-size:0.8rem; }
-        .chain-select { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; }
-        .chain-btn { padding:8px 16px; border-radius:20px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; font-size:0.85rem; transition:0.3s; }
-        .chain-btn.active { border-color:var(--gold); color:var(--gold); background:rgba(212,168,67,0.1); }
-        footer { text-align:center; color:#555; padding:30px 0; font-size:0.85rem; }
+        body { background:#030303; color:#e0e0e0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; padding:20px; max-width:600px; margin:auto; }
+        h1 { color:#d4a843; text-align:center; }
+        .card { background:#0a0a0a; border:1px solid #1a1a1a; border-radius:16px; padding:20px; margin:12px 0; }
+        .big { font-size:2.5rem; font-weight:700; text-align:center; color:#fff; }
+        .gold { color:#d4a843; }
+        input { width:100%; background:#111; border:1px solid #1a1a1a; color:#fff; padding:12px; border-radius:12px; margin:8px 0; }
+        .btn { padding:12px 24px; border-radius:12px; font-weight:600; cursor:pointer; border:none; margin:4px; }
+        .btn-gold { background:#d4a843; color:#000; }
+        .btn-outline { background:transparent; border:1px solid #1a1a1a; color:#fff; }
+        .result { background:#111; border-radius:12px; padding:12px; margin-top:12px; font-family:monospace; white-space:pre-wrap; }
     </style>
 </head>
 <body>
-    <h1>🏦 KARMA VAULT</h1>
-    <div class="badge"><span>🟢 v1.0 · 10 Chains · AI-Powered</span></div>
+    <h1>🏦 KARMA VAULT v1.0</h1>
 
-    <!-- BALANCE CARD -->
     <div class="card">
-        <h2>💰 Balance</h2>
-        <div class="score" id="balance">--</div>
-        <div style="color:var(--muted);text-align:center">KARMA</div>
-        <div class="grid" style="margin-top:12px">
-            <div class="stat"><div class="value" id="usd-value">--</div><div class="label">USD VALUE</div></div>
-            <div class="stat"><div class="value" id="karma-score">--</div><div class="label">KARMA SCORE</div></div>
-        </div>
+        <div style="color:#888">BALANCE</div>
+        <div class="big" id="balance">--</div>
+        <div style="color:#888;text-align:center">KARMA</div>
     </div>
 
-    <!-- KARMA SCORE CARD -->
     <div class="card">
-        <h2>🛡️ KARMA Score</h2>
-        <div class="score" id="score-display">--</div>
-        <div class="badge-display" id="badge-display">--</div>
-        <div class="grid">
-            <div class="stat"><div class="value" id="chains-active">--</div><div class="label">CHAINS ACTIVE</div></div>
-            <div class="stat"><div class="value" id="gas-saved">--</div><div class="label">GAS SAVED</div></div>
-        </div>
+        <div style="color:#888">KARMA SCORE</div>
+        <div class="big gold" id="score">--</div>
+        <div style="color:#888;text-align:center" id="badge">--</div>
     </div>
 
-    <!-- SEND CARD -->
     <div class="card">
-        <h2>📤 Send KARMA</h2>
-        <div class="input-group">
-            <input type="text" id="recipient" placeholder="Recipient address (0x...)">
-        </div>
-        <div class="input-group">
-            <input type="number" id="amount" placeholder="Amount (KARMA)">
-        </div>
-        <div class="chain-select" id="chain-select">
-            <button class="chain-btn active" data-chain="KARMA">KARMA</button>
-            <button class="chain-btn" data-chain="Ethereum">ETH</button>
-            <button class="chain-btn" data-chain="Solana">SOL</button>
-            <button class="chain-btn" data-chain="BNB">BNB</button>
-            <button class="chain-btn" data-chain="Cosmos">ATOM</button>
-            <button class="chain-btn" data-chain="Polkadot">DOT</button>
-            <button class="chain-btn" data-chain="Avalanche">AVAX</button>
-            <button class="chain-btn" data-chain="Sui">SUI</button>
-            <button class="chain-btn" data-chain="Aptos">APT</button>
-            <button class="chain-btn" data-chain="Polygon">MATIC</button>
-        </div>
-        <div style="margin-top:10px">
-            <button class="btn btn-gold" onclick="sendKARMA()">SEND</button>
-            <button class="btn btn-outline" onclick="checkGuardian()" style="margin-left:8px">🛡️ CHECK RECIPIENT</button>
-        </div>
-        <div class="result" id="send-result" style="display:none"></div>
+        <div style="color:#d4a843;font-weight:700">SEND KARMA</div>
+        <input type="text" id="recipient" placeholder="Recipient address">
+        <input type="number" id="amount" placeholder="Amount (KARMA)">
+        <button class="btn btn-gold" onclick="send()">SEND</button>
+        <button class="btn btn-outline" onclick="check()">CHECK RECIPIENT</button>
+        <div class="result" id="result" style="display:none"></div>
     </div>
-
-    <!-- NFT CARD -->
-    <div class="card">
-        <h2>🧬 Living NFT</h2>
-        <div style="text-align:center;font-size:4rem" id="nft-icon">🌱</div>
-        <div class="badge-display" id="nft-level">SPARK</div>
-        <div style="color:var(--muted);text-align:center;font-size:0.85rem" id="nft-progress">0/10 actions to next level</div>
-    </div>
-
-    <footer>KARMA VAULT v1.0 — Built by The Architect & The KARMA Brotherhood</footer>
 
     <script>
         const API = "http://167.71.74.139";
-        let karmaScore = Math.floor(Math.random() * 1000);
-        let balance = Math.floor(Math.random() * 1000000);
+        document.getElementById("balance").textContent = Math.floor(Math.random()*1000000).toLocaleString();
+        const score = Math.floor(Math.random()*1000);
+        document.getElementById("score").textContent = score;
+        document.getElementById("badge").textContent = score>700?'CREATOR':score>400?'ACTIVE':'NEWCOMER';
 
-        document.getElementById("balance").textContent = balance.toLocaleString();
-        document.getElementById("usd-value").textContent = "$" + (balance * 0.10).toLocaleString();
-        document.getElementById("karma-score").textContent = karmaScore;
-        document.getElementById("score-display").textContent = karmaScore;
-
-        const badges = ['🛡️ Trusted','⚡ Active','🌟 Creator','🔰 Newcomer','💎 Diamond','🔥 Influencer'];
-        const levels = ['🌱 SPARK','🌿 SPROUT','🌳 TREE','⚡ LIGHTNING','💎 DIAMOND'];
-        const badge = badges[karmaScore % badges.length];
-        const level = levels[Math.floor(karmaScore / 200)];
-        document.getElementById("badge-display").textContent = badge;
-        document.getElementById("nft-level").textContent = level;
-        document.getElementById("chains-active").textContent = Math.floor(Math.random() * 10) + 1;
-        document.getElementById("gas-saved").textContent = Math.floor(Math.random() * 50000) + " GWEI";
-
-        document.querySelectorAll('.chain-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.chain-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            });
-        });
-
-        function sendKARMA() {
-            const recipient = document.getElementById("recipient").value;
-            const amount = parseInt(document.getElementById("amount").value);
-            const result = document.getElementById("send-result");
-            if (!recipient || !amount) {
-                result.style.display = "block";
-                result.textContent = "❌ Please enter recipient and amount.";
-                return;
-            }
-            result.style.display = "block";
-            result.textContent = `✅ Sent ${amount} KARMA to ${recipient.substring(0,10)}...\n🔥 Burned: ${Math.floor(amount*0.1)} KARMA\n💧 LP added: ${Math.floor(amount*0.05)} KARMA`;
+        function send() {
+            const r = document.getElementById("recipient").value;
+            const a = document.getElementById("amount").value;
+            const out = document.getElementById("result");
+            out.style.display="block";
+            out.textContent = r&&a ? `Sent ${a} KARMA to ${r.slice(0,10)}...\nBurned: ${Math.floor(a*0.1)} KARMA` : "Enter recipient and amount";
         }
 
-        async function checkGuardian() {
-            const recipient = document.getElementById("recipient").value;
-            const result = document.getElementById("send-result");
-            if (!recipient) {
-                result.style.display = "block";
-                result.textContent = "❌ Please enter recipient address first.";
-                return;
-            }
+        async function check() {
+            const r = document.getElementById("recipient").value;
+            const out = document.getElementById("result");
+            if(!r) { out.style.display="block"; out.textContent="Enter address first"; return; }
             try {
-                const r = await fetch(`${API}:10004/api/guard/${recipient}`);
-                const data = await r.json();
-                result.style.display = "block";
-                result.textContent = JSON.stringify(data, null, 2);
+                const res = await fetch(`${API}:10004/api/guard/${r}`);
+                const d = await res.json();
+                out.style.display="block";
+                out.textContent = JSON.stringify(d,null,2);
             } catch(e) {
-                result.style.display = "block";
-                result.textContent = "⚠️ Guardian unreachable. Proceed with caution.";
+                out.style.display="block";
+                out.textContent = "Guardian unreachable";
             }
         }
     </script>
